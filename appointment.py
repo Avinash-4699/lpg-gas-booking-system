@@ -6,7 +6,7 @@ import tkinter.messagebox
 # DB connection
 conn = sqlite3.connect('database.db')
 
-# cursor to move around the databse
+# cursor to move around the database
 c = conn.cursor()
 
 # empty list to later append the ids from the database
@@ -28,7 +28,8 @@ class Application:
         self.heading = Label(self.left, text="LPG Booking System", font=(
             'georgia 40 bold'), fg='black', bg='grey')
         self.heading.place(x=0, y=0)
-        # patients name
+
+        # customer's name
         self.name = Label(self.left, text="Customer's Name", font=(
             'georgia 18 bold'), fg='black', bg='grey')
         self.name.place(x=0, y=100)
@@ -58,7 +59,7 @@ class Application:
             'georgia 18 bold'), fg='black', bg='grey')
         self.phone.place(x=0, y=300)
 
-        # Entries for all labels============================================================
+        # Entries for all labels
         self.name_ent = Entry(self.left, width=30)
         self.name_ent.place(x=250, y=100)
 
@@ -91,7 +92,8 @@ class Application:
 
         # ordering the ids
         self.new = sorted(ids)
-        self.final_id = self.new[len(ids)-1]
+        self.final_id = self.new[len(ids) - 1]
+
         # displaying the logs in our right frame
         self.logs = Label(self.right, text="Booking logs", font=(
             'georgia 28 bold'), fg='black', bg='grey')
@@ -101,9 +103,9 @@ class Application:
         self.box.place(x=20, y=60)
         self.box.insert(END, "Total Bookings till now : " +
                         str(self.final_id) + " \n")
-    # funtion to call when the submit button is clicked
 
-  def add_appointment(self):
+    # function to call when the submit button is clicked
+    def add_appointment(self):
         # getting the user inputs
         self.val1 = self.name_ent.get()
         self.val2 = self.age_ent.get()
@@ -118,13 +120,13 @@ class Application:
         else:
             # now we add to the database
             sql = "INSERT INTO 'appointments' (name, age, gender, location, scheduled_time, phone) VALUES(?, ?, ?, ?, ?, ?)"
-            c.execute(sql, (self.val1, self.val2, self.val3,
-                            self.val4, self.val5, self.val6))
+            c.execute(sql, (self.val1, self.val2, self.val3, self.val4, self.val5, self.val6))
             conn.commit()
             tkinter.messagebox.showinfo(
                 "Success", "Booking for " + str(self.val1) + " has been created")
             self.box.insert(END, 'Booking fixed for ' +
-                            str(self.val1) + ' ---> ' + str(self.val5))  
+                            str(self.val1) + ' ---> ' + str(self.val5) + "\n")
+
 
 # creating the object
 root = Tk()
@@ -135,7 +137,6 @@ root.geometry("1366x768")
 
 # preventing the resize feature
 root.resizable(False, False)
-
 
 # end the loop
 root.mainloop()

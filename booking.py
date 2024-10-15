@@ -1,6 +1,5 @@
-# update the appointments
 from tkinter import *
-import tkinter.messagebox 
+import tkinter.messagebox
 import sqlite3
 
 conn = sqlite3.connect('database.db')
@@ -9,115 +8,124 @@ c = conn.cursor()
 class Application:
     def __init__(self, master):
         self.master = master
-        # heading label
-        self.heading = Label(master, text="Bookings ",  fg='grey', font=('arial 40 bold'))
-        self.heading.place(x=150, y=20)
+        self.master.title("Booking Management")
+        self.master.configure(bg='#f0f0f0')  # Set background color
 
-        # search criteria -->name 
-        self.name = Label(master, text="Enter Customer's Name", font=('arial 18 bold'))
-        self.name.place(x=0, y=100)
+        # Frames for better layout
+        self.top_frame = Frame(master, bg='#4682B4', height=100)
+        self.top_frame.pack(fill=BOTH)
+        self.bottom_frame = Frame(master, bg='#ffffff', height=500)
+        self.bottom_frame.pack(fill=BOTH, expand=True)
 
-        # entry for  the name
-        self.namenet = Entry(master, width=30)
-        self.namenet.place(x=280, y=92)
+        # Heading label in the top frame
+        self.heading = Label(self.top_frame, text="Booking Management System", bg='#4682B4', fg='white', 
+                             font=('Arial', 30, 'bold'))
+        self.heading.pack(pady=20)
 
-        # search button
-        self.search = Button(master, text="Search", width=12, height=1, bg='steelblue', command=self.search_db)
-        self.search.place(x=350, y=132)
-    # function to search
+        # Search Section
+        self.search_label = Label(self.bottom_frame, text="Enter Customer's Name", bg='#ffffff', font=('Arial', 18))
+        self.search_label.grid(row=0, column=0, padx=20, pady=20, sticky=W)
+
+        self.search_entry = Entry(self.bottom_frame, width=30, font=('Arial', 14))
+        self.search_entry.grid(row=0, column=1, padx=10, pady=20, sticky=W)
+
+        self.search_button = Button(self.bottom_frame, text="Search", command=self.search_db, 
+                                    bg='#4CAF50', fg='white', font=('Arial', 12, 'bold'), width=12)
+        self.search_button.grid(row=0, column=2, padx=10, pady=20)
+
+        # Result frame (where the update form will be shown)
+        self.result_frame = LabelFrame(self.bottom_frame, text="Update Customer Details", 
+                                       font=('Arial', 16, 'bold'), bg='#f0f0f0', padx=20, pady=20)
+        self.result_frame.grid(row=1, column=0, columnspan=3, padx=20, pady=20, sticky=W+E)
+
     def search_db(self):
-        self.input = self.namenet.get()
-        # execute sql 
+        self.input = self.search_entry.get()
 
         sql = "SELECT * FROM appointments WHERE name LIKE ?"
         self.res = c.execute(sql, (self.input,))
+        result = False  # to check if a result is found
+
         for self.row in self.res:
+            result = True
             self.name1 = self.row[1]
             self.age = self.row[2]
             self.gender = self.row[3]
             self.location = self.row[4]
             self.time = self.row[6]
             self.phone = self.row[5]
-        # creating the update form
-        self.uname = Label(self.master, text="Customer's Name", font=('arial 18 bold'))
-        self.uname.place(x=0, y=160)
 
-        self.uage = Label(self.master, text="Age", font=('arial 18 bold'))
-        self.uage.place(x=0, y=200)
+        if result:
+            # Call the update form creation method
+            self.create_update_form()
+        else:
+            tkinter.messagebox.showerror("Error", "No customer found with that name")
 
-        self.ugender = Label(self.master, text="Gender", font=('arial 18 bold'))
-        self.ugender.place(x=0, y=240)
+    def create_update_form(self):
+        # Clear the frame if it has any previous content
+        for widget in self.result_frame.winfo_children():
+            widget.destroy()
 
-        self.ulocation = Label(self.master, text="Address", font=('arial 18 bold'))
-        self.ulocation.place(x=0, y=280)
+        self.create_label_entry("Customer's Name", 0, self.name1)
+        self.create_label_entry("Age", 1, self.age)
+        self.create_label_entry("Gender", 2, self.gender)
+        self.create_label_entry("Address", 3, self.location)
+        self.create_label_entry("Book Date", 4, self.time)
+        self.create_label_entry("Phone Number", 5, self.phone)
 
-        self.utime = Label(self.master, text="Book Date", font=('arial 18 bold'))
-        self.utime.place(x=0, y=320)
+        self.update_button = Button(self.result_frame, text="Update", command=self.update_db, bg='#4CAF50', 
+                                    fg='white', font=('Arial', 14, 'bold'), width=12)
+        self.update_button.grid(row=6, column=1, pady=20)
 
-        self.uphone = Label(self.master, text="Phone Number", font=('arial 18 bold'))
-        self.uphone.place(x=0, y=360)
+        self.delete_button = Button(self.result_frame, text="Delete", command=self.delete_db, bg='#F44336', 
+                                    fg='white', font=('Arial', 14, 'bold'), width=12)
+        self.delete_button.grid(row=6, column=2, pady=20)
 
-        # entries for each labels==========================================================
-        # ===================filling the search result in the entry box to update
-        self.ent1 = Entry(self.master, width=30)
-        self.ent1.place(x=300, y=170)
-        self.ent1.insert(END, str(self.name1))
+    # Method to create labels and entry widgets inside the result frame
+    def create_label_entry(self, text, row, value):
+        label = Label(self.result_frame, text=text, font=('Arial', 14), bg='#f0f0f0')
+        label.grid(row=row, column=0, padx=10, pady=10, sticky=W)
 
-        self.ent2 = Entry(self.master, width=30)
-        self.ent2.place(x=300, y=210)
-        self.ent2.insert(END, str(self.age))
+        entry = Entry(self.result_frame, width=30, font=('Arial', 12))
+        entry.grid(row=row, column=1, padx=10, pady=10)
+        entry.insert(END, str(value))
 
-        self.ent3 = Entry(self.master, width=30)
-        self.ent3.place(x=300, y=250)
-        self.ent3.insert(END, str(self.gender))
+        # Storing entries for later use
+        if row == 0:
+            self.ent1 = entry
+        elif row == 1:
+            self.ent2 = entry
+        elif row == 2:
+            self.ent3 = entry
+        elif row == 3:
+            self.ent4 = entry
+        elif row == 4:
+            self.ent5 = entry
+        elif row == 5:
+            self.ent6 = entry
 
-        self.ent4 = Entry(self.master, width=30)
-        self.ent4.place(x=300, y=290)
-        self.ent4.insert(END, str(self.location))
-
-        self.ent5 = Entry(self.master, width=30)
-        self.ent5.place(x=300, y=330)
-        self.ent5.insert(END, str(self.time))
-
-        self.ent6 = Entry(self.master, width=30)
-        self.ent6.place(x=300, y=370)
-        self.ent6.insert(END, str(self.phone))
-
-        # button to execute update
-        self.update = Button(self.master, text="Update?", width=20, height=2,fg='white', bg='black', command=self.update_db)
-        self.update.place(x=400, y=410)
-
-        # button to delete
-        self.delete = Button(self.master, text="Delete?", width=20, height=2,fg='white', bg='black', command=self.delete_db)
-        self.delete.place(x=150, y=410)
     def update_db(self):
         # declaring the variables to update
-        self.var1 = self.ent1.get() #updated name
-        self.var2 = self.ent2.get() #updated age
-        self.var3 = self.ent3.get() #updated gender
-        self.var4 = self.ent4.get() #updated Address
-        self.var5 = self.ent5.get() #updated phone
-        self.var6 = self.ent6.get() #updated Date
+        self.var1 = self.ent1.get()  # updated name
+        self.var2 = self.ent2.get()  # updated age
+        self.var3 = self.ent3.get()  # updated gender
+        self.var4 = self.ent4.get()  # updated address
+        self.var5 = self.ent5.get()  # updated phone
+        self.var6 = self.ent6.get()  # updated date
 
         query = "UPDATE appointments SET name=?, age=?, gender=?, location=?, phone=?, scheduled_time=? WHERE name LIKE ?"
-        c.execute(query, (self.var1, self.var2, self.var3, self.var4, self.var5, self.var6, self.namenet.get(),))
+        c.execute(query, (self.var1, self.var2, self.var3, self.var4, self.var5, self.var6, self.search_entry.get(),))
         conn.commit()
         tkinter.messagebox.showinfo("Updated", "Successfully Updated.")
+
     def delete_db(self):
-        # delete the appointment
         sql2 = "DELETE FROM appointments WHERE name LIKE ?"
-        c.execute(sql2, (self.namenet.get(),))
+        c.execute(sql2, (self.search_entry.get(),))
         conn.commit()
         tkinter.messagebox.showinfo("Success", "Deleted Successfully")
-        self.ent1.destroy()
-        self.ent2.destroy()
-        self.ent3.destroy()
-        self.ent4.destroy()
-        self.ent5.destroy()
-        self.ent6.destroy()
+
 # creating the object
 root = Tk()
 b = Application(root)
-root.geometry("1366x768+0+0")
+root.geometry("800x600+100+50")
 root.resizable(False, False)
 root.mainloop()
